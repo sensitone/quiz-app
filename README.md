@@ -1,48 +1,64 @@
-# 4択問題集 Webアプリ
+# 学習用クイズWebアプリ
 
-Spring Boot + Thymeleaf + JPA + H2で作成した、初心者向けの4択問題集MVPです。
+Java 21 + Spring Boot 3（Spring MVC）と React + TypeScript + Vite で構成した、4択問題のモノレポです。
+
+## 構成
+
+- `backend/`: Gradle、Spring Web、Spring Data JPA、Validation、PostgreSQL
+- `frontend/`: React、TypeScript、Vite
+- `docker-compose.yml`: 開発用PostgreSQL
 
 ## 必要な環境
 
-- Java 17以上
-- Maven 3.9以上（またはMaven Wrapper）
+- Java 21
+- Node.js 20以上
+- npm
+- Docker / Docker Compose（ローカルPostgreSQLを使う場合）
 
-## 起動方法
-
-```bash
-./mvnw spring-boot:run
-```
-
-Mavenがインストール済みの場合は次でも起動できます。
+## Backendの起動
 
 ```bash
-mvn spring-boot:run
+cd backend
+../gradlew bootRun
 ```
 
-ブラウザで http://localhost:8080/ を開いてください。
+バックエンドは `http://localhost:8080` で起動します。起動時にPostgreSQLへサンプル問題を投入します。
 
-## 実装済みの機能
+### PostgreSQLの起動
 
-- DBの初期データから問題を取得
-- 4つの選択肢を表示
-- サーバー側で正誤判定
-- 解説表示
-- 全問終了後の正解数・正答率表示
-- セッションを使ったクイズの最初からやり直し
+別のターミナルで、バックエンド起動前に実行します。
 
-## DB
+```bash
+docker compose up -d postgres
+export POSTGRES_PASSWORD=question_app_password
+```
 
-開発用にH2のインメモリDBを使っています。アプリを停止するとデータは初期状態に戻ります。
-H2コンソールは http://localhost:8080/h2-console で利用できます。
+デフォルトの接続情報は、DB `question_app`、ユーザー `question_app_user`、パスワード `question_app_password`、ホスト `localhost:5432` です。既存のPostgreSQLを使う場合は、`POSTGRES_HOST`、`POSTGRES_PORT`、`POSTGRES_DB`、`POSTGRES_USER`、`POSTGRES_PASSWORD` を環境変数で上書きできます。
 
-- JDBC URL: `jdbc:h2:mem:quizdb`
-- User Name: `sa`
-- Password: 空欄
+## Frontendの起動
 
-## 今後の拡張
+別のターミナルで実行します。
 
-- Category Entityの追加
-- 管理者向け問題CRUD
-- QuizAttemptによる回答履歴
-- ユーザー認証
-- PostgreSQLへの切り替え
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+フロントエンドは `http://localhost:5173` で起動します。
+
+## REST API
+
+- `GET /api/quizzes`: 問題一覧（`id`, `title`）
+- `GET /api/quizzes/{id}`: 問題詳細（選択肢を含む。正解フラグは含まない）
+- `POST /api/quizzes/{id}/answer`: `{ "choiceId": 1 }` を受け取り、`correct` と `correctChoiceId` を返す
+
+開発用に `http://localhost:5173` からのCORSアクセスを許可しています。
+
+## PostgreSQLの停止
+
+```bash
+docker compose down
+```
+
+データも削除して初期化する場合は `docker compose down -v` を使います。
