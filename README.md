@@ -1,48 +1,43 @@
-# 4択問題集 Webアプリ
+# 学習用クイズWebアプリ
 
-Spring Boot + Thymeleaf + JPA + H2で作成した、初心者向けの4択問題集MVPです。
+Java 21 + Spring Boot 3（Spring MVC）と React + TypeScript + Vite で構成した、4択問題のモノレポです。
+
+## 構成
+
+- `backend/`: Gradle、Spring Web、Spring Data JPA、Validation、H2
+- `frontend/`: React、TypeScript、Vite
 
 ## 必要な環境
 
-- Java 17以上
-- Maven 3.9以上（またはMaven Wrapper）
+- Java 21
+- Node.js 20以上
+- npm
 
-## 起動方法
-
-```bash
-./mvnw spring-boot:run
-```
-
-Mavenがインストール済みの場合は次でも起動できます。
+## Backendの起動
 
 ```bash
-mvn spring-boot:run
+cd backend
+../gradlew bootRun
 ```
 
-ブラウザで http://localhost:8080/ を開いてください。
+バックエンドは `http://localhost:8080` で起動します。起動時にH2のインメモリDBへサンプル問題を投入します。
 
-## 実装済みの機能
+## Frontendの起動
 
-- DBの初期データから問題を取得
-- 4つの選択肢を表示
-- サーバー側で正誤判定
-- 解説表示
-- 全問終了後の正解数・正答率表示
-- セッションを使ったクイズの最初からやり直し
+別のターミナルで実行します。
 
-## DB
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-開発用にH2のインメモリDBを使っています。アプリを停止するとデータは初期状態に戻ります。
-H2コンソールは http://localhost:8080/h2-console で利用できます。
+フロントエンドは `http://localhost:5173` で起動します。
 
-- JDBC URL: `jdbc:h2:mem:quizdb`
-- User Name: `sa`
-- Password: 空欄
+## REST API
 
-## 今後の拡張
+- `GET /api/quizzes`: 問題一覧（`id`, `title`）
+- `GET /api/quizzes/{id}`: 問題詳細（選択肢を含む。正解フラグは含まない）
+- `POST /api/quizzes/{id}/answer`: `{ "choiceId": 1 }` を受け取り、`correct` と `correctChoiceId` を返す
 
-- Category Entityの追加
-- 管理者向け問題CRUD
-- QuizAttemptによる回答履歴
-- ユーザー認証
-- PostgreSQLへの切り替え
+開発用に `http://localhost:5173` からのCORSアクセスを許可しています。
