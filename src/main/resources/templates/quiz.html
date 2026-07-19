@@ -11,7 +11,7 @@
     <p class="eyebrow">QUESTION <span th:text="${questionNumber}"></span> / <span th:text="${totalQuestions}"></span></p>
     <h1 th:text="${question.questionText}">問題文</h1>
 
-    <form class="choices" th:action="@{/quiz/answer}" method="post">
+    <form class="choices" th:if="${!finalQuestion}" th:action="@{/quiz/answer}" method="post">
         <input type="hidden" name="questionId" th:value="${question.id}">
         <label class="choice" th:each="choice : ${question.choices}">
             <input type="radio" name="choiceId" th:value="${choice.id}" required>
@@ -22,7 +22,10 @@
 
     <section class="feedback" th:if="${lastResult != null}">
         <h2 th:text="${lastResult ? '正解です！' : '不正解です'}">結果</h2>
-        <p th:text="${session.lastExplanation}">解説</p>
+        <p th:text="${lastExplanation != null ? lastExplanation : session.lastExplanation}">解説</p>
+        <form th:if="${finalQuestion}" th:action="@{/quiz/result}" method="get">
+            <button class="button primary" type="submit">結果を見る</button>
+        </form>
     </section>
 </main>
 </body>

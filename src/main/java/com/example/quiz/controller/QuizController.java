@@ -8,7 +8,6 @@ import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -38,6 +37,17 @@ public class QuizController {
         List<Long> questionIds = getQuestionIds(session);
         int currentIndex = getInteger(session, CURRENT_INDEX);
         if (currentIndex >= questionIds.size()) {
+            if (session.getAttribute(LAST_RESULT) != null) {
+                Question lastQuestion = quizService.findQuestion(
+                        (Long) session.getAttribute("lastQuestionId"));
+                model.addAttribute("question", lastQuestion);
+                model.addAttribute("questionNumber", questionIds.size());
+                model.addAttribute("totalQuestions", questionIds.size());
+                model.addAttribute("lastResult", session.getAttribute(LAST_RESULT));
+                model.addAttribute("lastExplanation", session.getAttribute("lastExplanation"));
+                model.addAttribute("finalQuestion", true);
+                return "quiz";
+            }
             return "redirect:/quiz/result";
         }
 
@@ -46,6 +56,8 @@ public class QuizController {
         model.addAttribute("questionNumber", currentIndex + 1);
         model.addAttribute("totalQuestions", questionIds.size());
         model.addAttribute("lastResult", session.getAttribute(LAST_RESULT));
+        model.addAttribute("lastExplanation", session.getAttribute("lastExplanation"));
+        model.addAttribute("finalQuestion", false);
         return "quiz";
     }
 
@@ -72,6 +84,7 @@ public class QuizController {
         }
         session.setAttribute(LAST_RESULT, choice.isCorrect());
         session.setAttribute("lastExplanation", question.getExplanation());
+        session.setAttribute("lastQuestionId", questionId);
         session.setAttribute(CURRENT_INDEX, currentIndex + 1);
         return "redirect:/quiz";
     }
@@ -85,6 +98,7 @@ public class QuizController {
         model.addAttribute("percentage", questionIds.isEmpty() ? 0 : score * 100 / questionIds.size());
         session.removeAttribute(LAST_RESULT);
         session.removeAttribute("lastExplanation");
+        session.removeAttribute("lastQuestionId");
         return "result";
     }
 
